@@ -23,9 +23,9 @@ except LookupError:
     stop_words = set(stopwords.words("english"))
 
 # === CONFIG ===
-folder_path = "E:\\Documents\\Local Files\\_Wiki\\HomeNotes\\SharedVault\\_Pocket"  # ← CHANGE THIS
-cache_folder = os.path.join(folder_path, "..\\__resources\\preview_cache")
-thumb_folder = os.path.join(cache_folder, "..\\__resources\\thumbnails")
+folder_path = ""  # ← CHANGE THIS
+cache_folder = os.path.join(folder_path, "../__resources/preview_cache")
+thumb_folder = os.path.join(cache_folder, "../__resources/thumbnails")
 os.makedirs(thumb_folder, exist_ok=True)
 
 TAG_MAP = {
