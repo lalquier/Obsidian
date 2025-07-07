@@ -1,0 +1,7 @@
+# Remember to make backups of your vault
+vault_path: "LOCAL PATH To YOUR VAULT"
+required_fields:
+  - title
+  - created
+  - tags
+default_tag: "untagged"

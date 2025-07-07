@@ -7,6 +7,16 @@ import tqdm
 from datetime import datetime
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+import yaml
+
+# --- Utility to force quotes around yaml values
+class QuotedStr(str):
+    pass
+
+def quoted_str_representer(dumper, data):
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')
+
+yaml.add_representer(QuotedStr, quoted_str_representer)
 
 # NLTK
 try:
@@ -198,7 +208,7 @@ for filename in tqdm.tqdm(os.listdir(folder_path)):
         # Build frontmatter
         frontmatter = {
             "title": title,
-            "aliases": [title],
+            "aliases": [QuotedStr(title)],
             "id": f"{raw_ts}-{slug}",
             "type": "webclip",
             "context": "article",
