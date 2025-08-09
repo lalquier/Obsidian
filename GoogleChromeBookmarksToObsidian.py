@@ -10,21 +10,27 @@ from markdownify import markdownify as md
 from pathlib import Path
 from datetime import datetime
 
-BOOKMARKS_FILE = 'bookmarks_6_7_25.html'
-OUTPUT_FOLDER = 'GoogleObsidian\\_GoogleBookmarks'
+ROOT_DIR = 'C:\\Users\\lalqu\\Downloads\\1664908_chrome_2025_07_19_040f9'
+BOOKMARKS_FILE = ROOT_DIR + '\\1664908_chrome_2025_07_19_040f9.html'
+# BOOKMARKS_FILE = 'bookmarks_6_7_25.html'
+OUTPUT_FOLDER = ROOT_DIR + '\\GoogleObsidian\\_GoogleBookmarks'
 THUMB_FOLDER = '../__resources/_thumbs'
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 def sanitize_filename(name, max_length=100):
-    if not name:
+    try:
+        if not name:
+            return "untitled"
+        name = re.sub(r'[<>:"/\\|?*\n\r]', '', name)
+        name = re.sub(r'\s+', ' ', name).strip()
+        name = name[:max_length].rstrip('. ')
+        reserved = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'LPT1'}
+        if name.upper() in reserved:
+            name = f"_{name}"
+        return name or "untitled"
+    except Exception as e:
+        print(f"[!] Filename sanitization failed: {e}")
         return "untitled"
-    name = re.sub(r'[<>:"/\\|?*\n\r]', '', name)
-    name = re.sub(r'\s+', ' ', name).strip()
-    name = name[:max_length].rstrip('. ')
-    reserved = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'LPT1'}
-    if name.upper() in reserved:
-        name = f"_{name}"
-    return name or "untitled"
 
 def ensure_unique_filename(directory, base_name, extension=".md"):
     i = 0
@@ -104,7 +110,7 @@ def process_bookmark(tag, path):
     page_data = fetch_preview(href)
     title = page_data.get("title") or name
     description = page_data.get("description", "")
-    tags = page_data.get("tags", [])
+    tags = [f'"{tag}"' for tag in page_data.get("tags", [])]
     thumbnail = save_thumbnail(page_data.get("thumbnail"), os.path.join(path, THUMB_FOLDER))
 
     safe_title = sanitize_filename(title)
@@ -134,7 +140,8 @@ def process_bookmark(tag, path):
 
 def process_node(node, path):
     folder_to_enter = None
-    for tag in node:
+    for tag in node: 
+        # print(tag.name)
         if tag.name == "h3":
             folder_to_enter = sanitize_filename(tag.get_text())
             print(">> Folder: " + folder_to_enter)
@@ -156,12 +163,16 @@ def process_node(node, path):
             # descend into contents of <DT>, if any
             process_node(tag.children, path)
 
+        elif tag.name == "dd":
+            print(">> Comment - skipping")
+            process_node(tag.children, path)
+
 
 def main():
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     with open(BOOKMARKS_FILE, 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
-    root = soup.find("dl")
+    root = soup.find("dl") 
     process_node(root.children, OUTPUT_FOLDER)
     print(f"[✓] Markdown files created in: {OUTPUT_FOLDER}")
 
